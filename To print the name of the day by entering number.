@@ -1,4 +1,5 @@
-day = input("Enter a number to check the day")
+#To print the name of the day by entering number.
+day = input("Enter a number to check the day: ")
 if day==1:
     print("The day is Monday")
 elif day==2:
