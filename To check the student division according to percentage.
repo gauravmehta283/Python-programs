@@ -1,0 +1,8 @@
+# To check the student division according to percentage.
+per = input("Enter Percentage Obtained: ")
+if per >= 60 :
+	print("1st Division")
+elif per >= 50 and per <= 59 :
+	print("2nd Division")
+else:
+	print("3rd Division")
