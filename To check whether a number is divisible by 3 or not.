@@ -1,0 +1,6 @@
+# To check whether a number is divisible by 3 or not.
+num = input("Enter your number:")
+if(num%3==0):
+    print("The Given number is divisible by 3")
+else:
+    print("The Given number is not divisible by 3")
