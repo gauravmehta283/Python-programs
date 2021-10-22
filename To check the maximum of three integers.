@@ -1,3 +1,4 @@
+# To check the maximum of three integers
 x = input("Enter 1st number")
 y = input("Enter 2nd number")
 z = input("Enter 3rd number")
