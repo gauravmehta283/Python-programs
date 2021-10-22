@@ -1,0 +1,6 @@
+# To check the student passsed or failed according to percentage.
+per = input("Enter Percentage: ")
+if per>=33:
+    print("The student passed")
+else:
+    print("The student failed!")
