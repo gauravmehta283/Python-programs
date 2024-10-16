@@ -1,0 +1,317 @@
+import  mysql.connector  as  msc
+import  datetime
+con = msc.connect(host="localhost",user="root",passwd="root",db="Inventory")
+mycur = con.cursor()
+
+def  Ch_Cn():		#Function to Check connection
+    if  con.is_connected():
+        print("Sucessfully connected")
+    else:
+        print("database not connected")
+def   Cr_db():		#Function to create database
+    query = "CREATE DATABASE IF NOT EXISTS Inventory;"
+    mycur.execute(query)
+    query = "Use inventory;"
+    mycur.execute(query)
+def   product():
+    while True :
+        print("   1. Add New Product")
+        print("   2. List Product")
+        print("   3. Update Product")
+        print("   4. Delete Product")
+        print("   5. Back (Main Menu)")
+        p = int(input(" Enter Your Choice :"))
+        if  p==1:
+            add_product()
+        if  p==2:
+            search_product()
+        if  p==3:
+            update_product()
+        if  p==4:
+            delete_product()
+        if  p== 5 :
+            break
+
+def   purchase():
+    print(" 1. Add Order")
+    print(" 2. List Order")
+    print(" 3. Back (Main Menu)")
+    o = int(input("Enter Your Choice :"))
+    if  o==1 :
+        add_order()
+    if  o==2 :
+        list_order()
+    else:
+        pass
+def   sales():
+    while True :
+        print("    1. Sale Items")
+        print("    2. List Sales")
+        print("    3. Back (Main Menu)")
+        s = int(input(" Enter Your Choice :"))
+        if  s== 1 :
+            sale_product()
+        if  s== 2 :
+            list_sale()
+        if  s== 3 :
+            break
+def   user():
+    while True :
+        print("    1. Add user")
+        print("    2. List user")
+        print("    3. Back (Main Menu)")
+        u = int (input(" Enter Your Choice :"))
+        if  u==1:
+                   add_user()
+        if  u==2:
+                   list_user()
+        if  u==3:
+                   break
+def   Cr_tb(): 		#Function to create tables
+    print(" Creating PRODUCT table")
+    sql = '''CREATE TABLE  Product (
+        pcode int(4) PRIMARY KEY,
+        pname char(30) NOT NULL,
+        pprice float(8,2) ,
+        pqty int(4) ,
+        pcat char(30));'''
+    mycur.execute(sql)
+    print(" Creating ORDER table")
+    sql = '''CREATE TABLE if not exists orders (
+            orderid int(4)PRIMARY KEY ,
+            pcode char(30) NOT NULL , 
+            pprice float(8,2) ,
+            pqty int(4) ,
+            supplier char(50),
+            pcat char(30));'''
+    mycur.execute(sql)
+    print(" ORDER table created")
+    print(" Creating SALES table")
+    sql = '''CREATE TABLE if not exists sales (
+            salesid int(4) PRIMARY KEY ,
+            salesdate DATE ,
+            pcode char(30) references product(pcode), 
+            pprice float(8,2) ,
+            pqty int(4) ,
+            Total double(8,2)
+            );'''
+    mycur.execute(sql)
+    print(" SALES table created")
+    sql = '''CREATE TABLE if not exists user (
+            uid varchar(30) PRIMARY KEY,
+            uname varchar(30) NOT NULL,
+            upwd varchar(30));'''
+    mycur.execute(sql)
+    print(" USER table created")
+
+def  list_tables():
+    sql="show tables;"
+    mycur.execute(sql)
+    for i in mycur:
+        print(i)
+
+def  add_order():
+    orderid = int(input("Enter product id :"))
+    pcode = input("Enter product code :")
+    price = float(input("Enter Product unit price: "))
+    pqty = int(input("Enter product quantity : "))
+    supplier = input("Enter Supplier details: ") 
+    pcat = input("Enter product category: ")   
+    val = (orderid,pcode,price,pqty,supplier,pcat)
+    sql = '''INSERT INTO orders(orderid,pcode,pprice,pqty,supplier,pcat) 
+          VALUES (%s,%s,%s,%s,%s,%s,%s)'''
+    mycur.execute(sql,val)
+def  list_order():
+    sql="SELECT * from orders"
+    mycur.execute(sql)
+    print("      ORDER DETAILS")
+    print("orderid  Date  Product code  price   quantity    Supplier   Category")
+    for i in mycur:
+        print(i[0]," ",i[1]," ",i[2]," ",i[3],"  ",i[4]," ",i[5]," ",i[6])
+             
+def  d_b():
+    while True :
+        print("  1. Database creation")
+        print("  2. List Database")
+        print("  3. Back (Main Menu)")
+        p = int (input(" Enter Your Choice :"))
+        if p==1 :
+            Cr_db()
+            Cr_tb()
+        if p==2 :
+            list_tables()
+        if p== 3 :
+            break
+def  add_product():
+    sql = ’’’INSERT INTO product(pcode,pname,pprice,pqty,pcat) 
+VALUES(%s,%s,%s,%s,%s)’’’
+    code  = int(input(" Enter product code :"))
+    search = "SELECT count(*) FROM product WHERE pcode=%s;"
+    val = (code,)
+    mycur.execute(search,val)
+    for x in mycur:
+               cnt=x[0]
+    if cnt==0:
+        name = input(" Enter product name :")
+        qty = int(input(" Enter product quantity :"))
+        price = float(input("Enter product unit price :"))
+        pcat = input("Enter Product category :")
+        val = (code,name,price,qty,pcat)
+        mycur.execute(sql,val)
+        con.commit()
+    else:
+        print("  Product already exist")
+def  update_product():
+    code = int(input("Enter the product code :"))
+    qty = int(input("Enter the quantity :"))
+    sql = "UPDATE product SET pqty=pqty+%s WHERE pcode=%s;"
+    val = (qty,code)
+    mycur.execute(sql,val)
+    con.commit()
+    print("Product details updated")
+
+def  delete_product():
+    code = int(input("Enter the product code :"))
+    sql = "DELETE FROM product WHERE pcode = %s;"
+    val = (code,)
+    mycur.execute(sql,val)
+    con.commit()
+    print(mycur.rowcount," record(s) deleted")
+
+def search_product():      
+    while True :
+        print("    1. List all product")
+        print("    2. List product code wise")
+        print("    3. List product categoty wise")
+        print("    4. Back (Main Menu)")
+        s = int(input(" Enter Your Choice :"))
+        if s==1 :
+            list_product()
+        if s==2 :
+            code = int(input(" Enter product code :"))
+            list_prcode(code)     
+        if s==3 :
+            cat = input("Enter category :")
+            list_prcat(cat)                   
+        if s== 4 :
+            break
+
+def  list_product():
+    sql="SELECT * from product"
+    mycur.execute(sql)
+    print("   PRODUCT DETAILS")
+    print("  code    name    price   quantity      category")
+    for i in mycur:
+        print(" ",i[0]," ",i[1]," ",i[2]," ",i[3]," ",i[4])
+  
+def  list_prcode(code):
+    sql = "SELECT * from product WHERE pcode=%s"
+    val = (code,)
+    mycur.execute(sql,val)
+    print("   PRODUCT DETAILS")
+    print("  code    name    price   quantity      category")
+    for i in mycur:
+        print(" ",i[0],"  ",i[1],"  ",i[2],"     ",i[3]," ",i[4])
+  
+def  sale_product():
+    pcode = input("Enter product code: ")
+    sql="SELECT count(*) from product WHERE pcode=%s;"
+    val=(pcode,)
+    mycur.execute(sql,val)
+    for x in mycur:
+              cnt = x[0]
+    if cnt !=0 :
+        sql="SELECT * from product WHERE pcode=%s;"
+        val=(pcode,)
+        mycur.execute(sql,val)
+        for x in mycur:
+            print(x)
+            price = int(x[2])
+            pqty = int(x[3])
+            qty = int(input("Enter no of quantity :"))
+            if qty <= pqty:
+                total = qty*price
+                print ("Collect  Rs. ", total)
+                sql = "INSERT into sales values(%s,%s,%s,%s,%s,%s)"
+                val = (int(cnt)+1, datetime.datetime.now(),pcode,price,qty,total)
+                mycur.execute(sql,val)
+              sql = "UPDATE product SET pqty=pqty-%s WHERE pcode=%s"
+                val = (qty,pcode)
+                mycur.execute(sql,val)
+                con.commit()
+            else:
+                print(" Quantity not Available")
+        else:
+            print(" Product is not avalaible")
+
+def  list_sale():
+    sql = "SELECT * FROM sales"
+    mycur.execute(sql)
+    print("   SALES DETAILS")
+    print("Sales id  Date   Product_Code    Price   Quantity  Total")
+    for x in mycur:
+        print(x[0]," ",x[1]," ",x[2],"   ",x[3]," ",x[4]," ",x[5])
+                                                          
+def  list_prcat(cat):
+    print(cat)
+    sql = "SELECT * from product WHERE pcat =%s"
+    val = (cat,)
+    mycur.execute(sql,val)
+    print("PRODUCT DETAILS")
+    print("code    name    price   quantity      category")
+    for i in mycur:
+              print(" ",i[0],"  ",i[1],"  ",i[2],"     ",i[3]," ",i[4])
+  
+def add_user():
+           uid = input("Enter emaid id :")
+           name = input(" Enter Name :")
+           paswd = input("Enter Password :")
+           sql = "INSERT INTO user values (%s,%s,%s);"
+           val = (uid,name,paswd)
+           mycur.execute(sql,val)
+           con.commit()
+           print(mycur.rowcount, " user created")
+def  list_user():
+    sql = "SELECT uid,uname from user"
+    mycur.execute(sql)
+    print("   USER DETAILS")
+    print("  UID        name    ")
+    for i in mycur:
+        print(" ",i[0],"  ",i[1])
+######################MAIN##################
+while True:
+    print("  INVENTORY MANAGEMENT")
+    print("  ****************\n")
+    print("  1. PRODUCT MANAGEMENT")
+    print("  2. PURCHASE MANAGEMENT")
+    print("  3. SALES MANAGEMENT")
+    print("  4. USER MANAGEMENT")
+    print("  5. DATABASE SETUP")
+    print("  6. CHECK CONNECTION")
+    print("  7. EXIT\n")
+    n = int(input("Enter your choice :"))
+    if  n== 1:
+        product()
+    if  n== 2:
+        purchase()
+    if  n== 3:
+        sales()
+    if  n== 4:
+        user()
+    if  n==5 :
+        Cr_db()
+        d_b()
+    if  n== 6:
+        Ch_Cn()
+   if n== 7:
+        print("\n"
+              "      \n"
+              "   ##======================================================##\n"
+              "   || _____        ___                          ___        ||\n"
+              "   ||   |   |   | |   | |\   | |  /      |   | |   | |   | ||\n"
+              "   ||   |   |___| |___| | \  | |_/       |___| |   | |   | ||\n"
+              "   ||   |   |   | |   | |  \ | | \           | |   | |   | ||\n"
+              "   ||   |   |   | |   | |   \| |  \       ___| |___| |___| ||\n"
+              "   ##======================================================##\n"
+              "\n")
+        print("DEVELOPED BY GAURAV MEHTA") 
